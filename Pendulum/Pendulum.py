@@ -13,7 +13,7 @@ T = 2
 x = 0.
 th = 0.5
 TIMESTEP = 0.01
-L0, k = 0.3, 40.
+L0, k = 0.3, 60.
 m = 0.3
 g = 9.81
 
@@ -68,8 +68,14 @@ ax.set_ylabel('Y')
 
 ax.set_zlim3d([SIZE, 0])
 ax.set_zlabel('Z')
-
+line, = ax.plot([], [], [])
+#line, = ax.plot([0, data1[0]], [0, data1[1]], [0, data1[2]])
 #ax.set_title('Время = 0 с')
+
+def init():
+    line.set_data([], [])
+    line.set_3d_properties([])
+    return line,
 
 def drawsphere(x0, y0, z0, r):
     u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
@@ -83,7 +89,8 @@ def update_lines(num, data, i):
     #data1 = fpolar(L0, 0, np.sin(num))
     data1 = fpolar(L0 + data[num, 0], 0, np.sin(data[num, 1]))
     drawsphere(data1[0], data1[1], data1[2], 0.01)
-    line, = ax.plot([0, data1[0]], [0, data1[1]], [0, data1[2]])
+    line.set_data([0, data1[0]], [0, data1[1]])
+    line.set_3d_properties([0, data1[2]])
     return line,
 
 #ax.plot([0, data[0]], [0, data[1]], [0, data[2]])
@@ -91,7 +98,7 @@ def update_lines(num, data, i):
 #lines = [ax.plot(dat[0, 0:1], dat[1, 0:1], dat[2, 0:1])[0] for dat in data]
 #plt.plot(lines) fargs=(datax)
 
-line_ani = animation.FuncAnimation(fig, update_lines, STEPMAX, fargs=(datax, 0), interval=100, blit=True)
+line_ani = animation.FuncAnimation(fig, update_lines, init_func=init, frames=STEPMAX, fargs=(datax, 0), interval=100, blit=True)
 print('Starting rendering the result')
-#line_ani.save('pendulum.gif')
+line_ani.save('pendulum.gif')
 plt.show()
