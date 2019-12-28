@@ -5,7 +5,7 @@ print('Starting')
 T = 3
 #CONSTS
 x = 0.
-th = 0.
+th = 1.
 TIMESTEP = 0.01
 L0, k = 0.3, 40.
 m = 0.3

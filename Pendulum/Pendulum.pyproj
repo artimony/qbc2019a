@@ -4,13 +4,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>161a9d66-ae03-445e-9179-669b04e12de1</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Pendulum.py</StartupFile>
+    <StartupFile>Pendulum2D.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>Pendulum</Name>
     <RootNamespace>Pendulum</RootNamespace>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,8 +25,13 @@
     <Compile Include="diffsolve.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="kyk.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="module1.py" />
+    <Compile Include="modelb.py" />
     <Compile Include="Pendulum.py" />
+    <Compile Include="Pendulum2D.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

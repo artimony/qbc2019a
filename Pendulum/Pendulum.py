@@ -8,24 +8,69 @@ print('Initialization...')
 #########################################################################
 ###INSERTION
 
-T = 2
+#CSV start
+
+with open('config.csv') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=';')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            print(f'Column names are {", ".join(row)}')
+            line_count += 1
+        else:
+            print(f'\t{row[0]} works in the {row[1]} department, and was born in {row[2]}.')
+            line_count += 1
+    print(f'Processed {line_count} lines.')
+    if line_count == 0:
+        print(f'NO test were found. Aborting.')
+        exit()
+    print(f'Found {line_count-1} tests.')
+
+    
+
+
+T = 4
 #CONSTS
 x = 0.
 th = 0.5
-TIMESTEP = 0.01
-L0, k = 0.3, 60.
-m = 0.3
+TIMESTEP = 0.001
+L0, k = 2., 5.
+freq = 20*2
+m = 0.2
 g = 9.81
 
 thd = thdd = xd = xdd = 0
-
+#Funcs
 def getxdd():
     return (L0 + x)* thd * thd - k * x / m + g * np.cos(th)
 def getthdd():
     return -g*np.sin(th)-2*xd*thd/(L0 + x)
+
+def fpolar(length, circle, phi):
+    lineData = np.empty(3)
+    lineData[0] = length * np.sin(phi) * np.cos(circle)
+    lineData[1] = length * np.sin(phi) * np.sin(circle)
+    lineData[2] = length * np.cos(phi)
+    return lineData
+###/INSERTION
+#########################################################################
+
+print('est. pendulum frequency: '+str(np.sqrt(g/L0)/(2*np.pi))+' Hz')
+print('est. spring frequency: '+str(np.sqrt(k/m)/(2*np.pi))+' Hz')
+print('est. frequency ratio: '+str(np.sqrt(g*m/(L0*k))))
+
+#CONST VALUES
+SIZE = 2.5
+
+#SETUP
+fig = plt.figure()
+ax = p3.Axes3D(fig)
+print('Setting up the graph with the size of '+str(SIZE)+' meters')
+
 STEPMAX = math.floor(T/TIMESTEP)
 datax = np.empty((STEPMAX, 2))
-print('Starting data generation for the graph, '+str(STEPMAX)+' entries to be generated')
+
+print('Starting data generation for the plot, '+str(STEPMAX)+' entries to be generated')
 for t in range(0, STEPMAX):
     datax[t, 0] = x
     datax[t, 1] = th
@@ -37,28 +82,7 @@ for t in range(0, STEPMAX):
     thd += thdd * TIMESTEP
     xd += xdd * TIMESTEP
 print('data generated')
-###/INSERTION
-#########################################################################
 
-#CONST VALUES
-SIZE = 0.5
-
-#TIMESTEP = 1/28. #1sec DINIT?
-#Pendulum creation
-def fpolar(length, circle, phi):
-    lineData = np.empty(3)
-    lineData[0] = length * np.sin(phi) * np.cos(circle)
-    lineData[1] = length * np.sin(phi) * np.sin(circle)
-    lineData[2] = length * np.cos(phi)
-    return lineData
-#LOAD DATA
-
-#data = fpolar(0.3, 1, 1)
-
-#SETUP
-print('Setting up the graph with the size of '+str(SIZE)+' meters')
-fig = plt.figure()
-ax = p3.Axes3D(fig)
 # Setting the axes properties
 ax.set_xlim3d([-SIZE, SIZE])
 ax.set_xlabel('X')
@@ -68,9 +92,10 @@ ax.set_ylabel('Y')
 
 ax.set_zlim3d([SIZE, 0])
 ax.set_zlabel('Z')
+
+title = ax.text(0.5,0.85, 0.0, "", bbox={'facecolor':'w', 'alpha':0.5, 'pad':5},
+                transform=ax.transAxes, ha="left")
 line, = ax.plot([], [], [])
-#line, = ax.plot([0, data1[0]], [0, data1[1]], [0, data1[2]])
-#ax.set_title('Время = 0 с')
 
 def init():
     line.set_data([], [])
@@ -78,27 +103,21 @@ def init():
     return line,
 
 def drawsphere(x0, y0, z0, r):
-    u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
-    x = np.cos(u)*np.sin(v)*r*0.9 + x0
-    y = np.sin(u)*np.sin(v)*r*0.9 + y0
-    z = np.cos(v)*r/2 + z0
-    ax.plot_wireframe(x, y, z, color="r")
+    ax.scatter([x0], [y0], [z0], color="r", s=25)
 
-def update_lines(num, data, i):
-    #ax.set_title('Время = '+str(num * TIMESTEP)+' с')
-    #data1 = fpolar(L0, 0, np.sin(num))
-    data1 = fpolar(L0 + data[num, 0], 0, np.sin(data[num, 1]))
+def update_lines(num, data, time, f):
+    title.set_text("Время = {0:.2f} с".format(num * time*f))
+    data1 = fpolar(L0 + data[num*f, 0], 0, np.sin(data[num*f, 1]))
     drawsphere(data1[0], data1[1], data1[2], 0.01)
     line.set_data([0, data1[0]], [0, data1[1]])
     line.set_3d_properties([0, data1[2]])
-    return line,
+    return line, title
 
-#ax.plot([0, data[0]], [0, data[1]], [0, data[2]])
-#drawsphere(data[0], data[1], data[2], 0.03)
-#lines = [ax.plot(dat[0, 0:1], dat[1, 0:1], dat[2, 0:1])[0] for dat in data]
-#plt.plot(lines) fargs=(datax)
-
-line_ani = animation.FuncAnimation(fig, update_lines, init_func=init, frames=STEPMAX, fargs=(datax, 0), interval=100, blit=True)
+#STEPMAX = 100
+line_ani = animation.FuncAnimation(fig, update_lines, init_func=init, frames=int(STEPMAX/freq), fargs=(datax, TIMESTEP, freq), interval=TIMESTEP * 1000*freq, blit=True)
 print('Starting rendering the result')
-line_ani.save('pendulum.gif')
+#line_ani.save('pendulum.gif', writer='imagemagick', progress_callback =\
+#                    lambda i, n: print(f'Saving frame {i} of {n}'))
+print('finished')
 plt.show()
+

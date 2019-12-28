@@ -1,0 +1,2 @@
+x(sm);angle(rad);step(s);frequency;L(m);k(N/m);m(kg);g(m/s^2)
+0.0;0.5;0.01;1;0.3;80.0;0.3;9.81
